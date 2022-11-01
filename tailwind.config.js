@@ -5,7 +5,7 @@ module.exports = {
   },
   darkMode: false,
   theme: {
-    extend: {},
+    extend: { opacity: ["disabled"], backgroundColor: ["disabled"] },
   },
   plugins: [],
 };
