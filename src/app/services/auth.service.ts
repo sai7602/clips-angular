@@ -1,24 +1,45 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
+import {
+  AngularFirestore,
+  AngularFirestoreCollection,
+} from '@angular/fire/compat/firestore';
+import { map, Observable } from 'rxjs';
 import IUser from '../models/user.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  constructor(private auth: AngularFireAuth, private db: AngularFirestore) {}
+  private userCollection: AngularFirestoreCollection<IUser>;
+  public isAuthenticated$: Observable<boolean>;
+
+  constructor(private auth: AngularFireAuth, private db: AngularFirestore) {
+    this.userCollection = db.collection('users');
+    this.isAuthenticated$ = auth.user.pipe(map((user) => !!user));
+    this.auth.user.subscribe(console.log);
+  }
 
   public async createUser(userData: IUser) {
+    if (!userData.email || !userData.password) {
+      return;
+    }
+
     const userCredential = await this.auth.createUserWithEmailAndPassword(
-      userData.email as string,
-      userData.password as string
+      userData.email,
+      userData.password
     );
-    await this.db.collection('users').add({
+    if (!userCredential.user) {
+      throw new Error("User can't be found ");
+    }
+    await this.userCollection.doc(userCredential.user.uid).set({
       name: userData.name,
       email: userData.email,
       age: userData.age,
       phoneNumber: userData.phoneNumber,
+    });
+    await userCredential.user.updateProfile({
+      displayName: userData.name,
     });
   }
 }
