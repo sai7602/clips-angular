@@ -9,8 +9,6 @@ import { AuthService } from 'src/app/services/auth.service';
 export class RegisterComponent {
   constructor(private auth: AuthService) {}
 
-  inSubmission = false;
-
   name = new FormControl('', [Validators.required, Validators.minLength(3)]);
   email = new FormControl<string>('', [Validators.email, Validators.required]);
   age = new FormControl('', [
@@ -44,6 +42,7 @@ export class RegisterComponent {
   showAlert = false;
   alertMsg = 'Please Wait! Your account is being created.';
   alertColor = 'blue';
+  inSubmission = false;
 
   async register() {
     this.showAlert = true;
@@ -60,7 +59,7 @@ export class RegisterComponent {
       this.inSubmission = false;
       return;
     }
-    this.alertMsg = 'success';
+    this.alertMsg = 'Success! You are now registered.';
     this.alertColor = 'green';
   }
 }
