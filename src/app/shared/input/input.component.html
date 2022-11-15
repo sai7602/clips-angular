@@ -22,6 +22,10 @@
   </p>
   <p *ngIf="control.errors?.['min']" class="text-red-400">Value too low</p>
   <p *ngIf="control.errors?.['max']" class="text-red-400">Value too high</p>
+  <p *ngIf="control.errors?.['emailTaken']" class="text-red-400">Email taken</p>
+  <p *ngIf="control.errors?.['noMatch']" class="text-red-400">
+    Password do not match.
+  </p>
   <p class="text-red-400" *ngIf="control.errors?.['pattern']">
     Password must contain at least 1 uppercase letter, 1 lowercase letter, and 1
     number, has at least 8 characters and an contain special characters

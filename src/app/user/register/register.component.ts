@@ -1,16 +1,22 @@
 import { Component } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { AuthService } from 'src/app/services/auth.service';
+import { EmailTaken } from '../validators/email-taken';
+import { RegisterValidator } from '../validators/register-validator';
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.less'],
 })
 export class RegisterComponent {
-  constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService, private emailTaken: EmailTaken) {}
 
   name = new FormControl('', [Validators.required, Validators.minLength(3)]);
-  email = new FormControl<string>('', [Validators.email, Validators.required]);
+  email = new FormControl<string>(
+    '',
+    [Validators.email, Validators.required],
+    [this.emailTaken.validate]
+  );
   age = new FormControl('', [
     Validators.required,
     Validators.min(18),
@@ -30,14 +36,17 @@ export class RegisterComponent {
     Validators.maxLength(14),
   ]);
 
-  registerForm = new FormGroup({
-    name: this.name,
-    email: this.email,
-    age: this.age,
-    password: this.password,
-    confirmPassword: this.confirmPassword,
-    phoneNumber: this.phoneNumber,
-  });
+  registerForm = new FormGroup(
+    {
+      name: this.name,
+      email: this.email,
+      age: this.age,
+      password: this.password,
+      confirmPassword: this.confirmPassword,
+      phoneNumber: this.phoneNumber,
+    },
+    [RegisterValidator.match('password', 'confirmPassword')]
+  );
 
   showAlert = false;
   alertMsg = 'Please Wait! Your account is being created.';
