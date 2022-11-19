@@ -3,14 +3,14 @@
   <nav class="container flex items-center justify-start px-4 py-8 mx-auto">
     <!-- App Name -->
     <a class="mr-4 text-3xl font-bold text-indigo-400 uppercase" routerLink="/"
-      >Clipz</a
+      >Clips</a
     >
 
     <div class="flex items-center flex-grow">
       <!-- Primary Navigation -->
       <ul class="flex flex-row mt-1">
         <!-- Navigation Links -->
-        <li *ngIf="!!(auth.isAuthenticated$ | async); else authLinks">
+        <li *ngIf="!(auth.isAuthenticated$ | async); else authLinks">
           <a class="px-2" href="#" (click)="openModal($event)"
             >Login / Register</a
           >
