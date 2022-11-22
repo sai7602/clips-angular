@@ -28,10 +28,10 @@ export class UploadComponent implements OnDestroy {
   showPercentage = false;
   user: firebase.User | null = null;
   title = new FormControl('', [Validators.required, Validators.minLength(3)]);
-  task?: AngularFireUploadTask;
   uploadForm = new FormGroup({
     title: this.title,
   });
+  task?: AngularFireUploadTask;
   constructor(
     private storage: AngularFireStorage,
     private auth: AngularFireAuth,
@@ -44,6 +44,7 @@ export class UploadComponent implements OnDestroy {
     // this.auth.user.subscribe((user) => (this.user = user));
   }
   storeFile(event: Event) {
+    this.auth.user.subscribe((user) => (this.user = user));
     this.isDragover = false;
     this.file = (event as DragEvent).dataTransfer
       ? (event as DragEvent).dataTransfer?.files.item(0) ?? null
@@ -70,6 +71,7 @@ export class UploadComponent implements OnDestroy {
     this.task.percentageChanges().subscribe((progress) => {
       this.percentage = (progress as number) / 100;
     });
+    console.log(this.user);
     this.task
       .snapshotChanges()
       .pipe(
@@ -85,7 +87,7 @@ export class UploadComponent implements OnDestroy {
             title: this.title.value as string,
             fileName: `${clipFileName}.mp4`,
             url,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
           };
 
           const clipDocRef = await this.clipsService.createClip(clip);
@@ -95,7 +97,7 @@ export class UploadComponent implements OnDestroy {
           this.showPercentage = false;
 
           setTimeout(() => {
-            this.router.navigate(['clip',clipDocRef.id]);
+            this.router.navigate(['clip', clipDocRef.id]);
           }, 1000);
         },
         error: (error) => {
