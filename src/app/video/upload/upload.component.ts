@@ -71,7 +71,6 @@ export class UploadComponent implements OnDestroy {
     this.task.percentageChanges().subscribe((progress) => {
       this.percentage = (progress as number) / 100;
     });
-    console.log(this.user);
     this.task
       .snapshotChanges()
       .pipe(
@@ -80,7 +79,6 @@ export class UploadComponent implements OnDestroy {
       )
       .subscribe({
         next: async (url) => {
-          console.log(this.user);
           const clip = {
             uid: this.user?.uid as string,
             displayName: this.user?.displayName as string,
@@ -91,7 +89,6 @@ export class UploadComponent implements OnDestroy {
           };
 
           const clipDocRef = await this.clipsService.createClip(clip);
-          console.log(clip);
           this.alertColor = 'green';
           this.alertMsg = 'Success';
           this.showPercentage = false;

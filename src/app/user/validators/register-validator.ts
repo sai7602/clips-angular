@@ -6,7 +6,6 @@ export class RegisterValidator {
       const control = group.get(controlName);
       const matchingControl = group.get(matchingControlName);
       if (!control || !matchingControl) {
-        console.log('first');
         return { controlNotFound: false };
       }
       const error =
