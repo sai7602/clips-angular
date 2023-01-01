@@ -10,6 +10,7 @@ import firebase from 'firebase/compat/app';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { ClipService } from 'src/app/services/clip.service';
 import { Router } from '@angular/router';
+import { FfmpegService } from 'src/app/services/ffmpeg.service';
 
 @Component({
   selector: 'app-upload',
@@ -32,18 +33,24 @@ export class UploadComponent implements OnDestroy {
     title: this.title,
   });
   task?: AngularFireUploadTask;
+  screenshots: string[] = [];
+
   constructor(
     private storage: AngularFireStorage,
     private auth: AngularFireAuth,
     private clipsService: ClipService,
-    private router: Router
-  ) {}
+    private router: Router,
+    public ffmpegService: FfmpegService
+  ) {
+    auth.user.subscribe((user) => (this.user = user));
+    this.ffmpegService.init();
+  }
 
   ngOnDestroy(): void {
     this.task?.cancel();
     // this.auth.user.subscribe((user) => (this.user = user));
   }
-  storeFile(event: Event) {
+  async storeFile(event: Event) {
     this.auth.user.subscribe((user) => (this.user = user));
     this.isDragover = false;
     this.file = (event as DragEvent).dataTransfer
@@ -52,6 +59,8 @@ export class UploadComponent implements OnDestroy {
     if (!this.file || this.file.type !== 'video/mp4') {
       return;
     }
+
+    this.screenshots = await this.ffmpegService.getScreenShorts(this.file);
     this.title.setValue(this.file.name.replace(/\.[^/.]+$/, ''));
     this.nextStep = true;
   }
