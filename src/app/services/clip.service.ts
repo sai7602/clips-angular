@@ -29,8 +29,6 @@ export class ClipService {
   getUserClips(sort$: BehaviorSubject<string>) {
     return combineLatest([this.auth.user, sort$]).pipe(
       switchMap(([user, sort]) => {
-        // console.log(value);
-        // const user = value[0];
         if (!user) {
           return of([]);
         }
@@ -50,7 +48,11 @@ export class ClipService {
   }
   async deleteClip(clip: IClip) {
     const clipRef = this.storage.ref(`clips/${clip.fileName}`);
-    clipRef.delete();
+    const screenshotRef = this.storage.ref(
+      `screenshots/${clip.screenshotFileName}`
+    );
+    await clipRef.delete();
+    await screenshotRef.delete();
 
     await this.clipCollection.doc(clip.docID).delete();
   }

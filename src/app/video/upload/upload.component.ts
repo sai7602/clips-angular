@@ -5,7 +5,7 @@ import {
   AngularFireUploadTask,
 } from '@angular/fire/compat/storage';
 import { v4 as uuid } from 'uuid';
-import { combineLatest, last, switchMap } from 'rxjs';
+import { combineLatest, forkJoin, switchMap } from 'rxjs';
 import firebase from 'firebase/compat/app';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { ClipService } from 'src/app/services/clip.service';
@@ -100,20 +100,29 @@ export class UploadComponent implements OnDestroy {
       }
       this.percentage = (clipProgress + screenshotProgress) / 200;
     });
-    this.task
-      .snapshotChanges()
+
+    const screenshotRef = this.storage.ref(screenshotPath);
+
+    forkJoin([
+      this.task.snapshotChanges(),
+      this.screenshotTask.snapshotChanges(),
+    ])
       .pipe(
-        last(),
-        switchMap(() => clipRef.getDownloadURL())
+        switchMap(() =>
+          forkJoin([clipRef.getDownloadURL(), screenshotRef.getDownloadURL()])
+        )
       )
       .subscribe({
-        next: async (url) => {
+        next: async (urls: string[]) => {
+          const [clipURL, screenshotURL] = urls;
           const clip = {
             uid: this.user?.uid as string,
             displayName: this.user?.displayName as string,
             title: this.title.value as string,
             fileName: `${clipFileName}.mp4`,
-            url,
+            url: clipURL,
+            screenshotURL,
+            screenshotFileName: `${clipFileName}.png`,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
           };
 
