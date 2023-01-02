@@ -12,5 +12,5 @@ module.exports = {
   theme: {
     extend: { opacity: ["disabled"], backgroundColor: ["disabled"] },
   },
-  plugins: [],
+  plugins: [require("@tailwindcss/aspect-ratio")],
 };

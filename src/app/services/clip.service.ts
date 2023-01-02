@@ -9,15 +9,24 @@ import {
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { BehaviorSubject, combineLatest, map, of, switchMap } from 'rxjs';
 import IClip from '../models/clip.model';
+import {
+  ActivatedRouteSnapshot,
+  Resolve,
+  Router,
+  RouterStateSnapshot,
+} from '@angular/router';
 @Injectable({
   providedIn: 'root',
 })
-export class ClipService {
+export class ClipService implements Resolve<IClip | null> {
   public clipCollection: AngularFirestoreCollection<IClip>;
+  pageClips: IClip[] = [];
+  pendingReq = false;
   constructor(
     private db: AngularFirestore,
     private auth: AngularFireAuth,
-    private storage: AngularFireStorage
+    private storage: AngularFireStorage,
+    private router: Router
   ) {
     this.clipCollection = db.collection('clips');
   }
@@ -32,7 +41,6 @@ export class ClipService {
         if (!user) {
           return of([]);
         }
-        console.log(sort);
         const query = this.clipCollection.ref
           .where('uid', '==', user.uid)
           .orderBy('timestamp', sort === '1' ? 'desc' : 'asc');
@@ -55,5 +63,48 @@ export class ClipService {
     await screenshotRef.delete();
 
     await this.clipCollection.doc(clip.docID).delete();
+  }
+  async getClips() {
+    if (this.pendingReq) {
+      return;
+    }
+    this.pendingReq = true;
+    let query = this.clipCollection.ref.orderBy('timestamp', 'desc').limit(6);
+    const { length } = this.pageClips;
+    if (length) {
+      const lastDocumentID = this.pageClips[length - 1].docID;
+      const lastDocument = await this.clipCollection
+        .doc(lastDocumentID)
+        .get()
+        .toPromise();
+      query = query.startAfter(lastDocument);
+    }
+    const snapshot = await query.get();
+
+    snapshot.forEach((doc) => {
+      this.pageClips.push({
+        docID: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    this.pendingReq = false;
+  }
+
+  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
+    return this.clipCollection
+      .doc(route.params['id'])
+      .get()
+      .pipe(
+        map((snapshot) => {
+          const data = snapshot.data();
+          if (!data) {
+            this.router.navigate(['/']);
+            return null;
+          }
+
+          return data;
+        })
+      );
   }
 }
