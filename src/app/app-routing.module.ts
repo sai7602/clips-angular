@@ -20,7 +20,7 @@ const routes: Routes = [
   {
     path: '',
     loadChildren: async () =>
-      await (
+      (
         await import('./video/video.module')
       ).VideoModule,
   },
